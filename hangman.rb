@@ -1,3 +1,6 @@
+require 'rainbow/refinement'
+using Rainbow
+
 class HangmanGame 
   attr_reader :display, :target, :rounds
 
@@ -7,6 +10,7 @@ class HangmanGame
     @target = words.sample.chop
     @display = "" 
     @rounds = 7
+    @guesses = []
     @target.size.times do
       @display += "*"
     end
@@ -25,6 +29,7 @@ class HangmanGame
       end
     else
       @rounds -= 1
+      @guesses << guess
     end
   end # check_and_replace
 
@@ -32,21 +37,20 @@ class HangmanGame
     print @display + "\t"
     while @rounds > 0 && display.include?("*")
       # puts @target
-      puts @rounds
+      puts "#{@rounds} ".yellow + Rainbow("#{@guesses}").fuchsia
       print "Guess a letter : "
       guess = gets.chomp
-      print "You inputs #{guess}\n"
       check_and_replace(guess)
-      print @display + "\t"
+      print Rainbow("#{@display}").lawngreen + "\t"
     end
     puts ""
-  end
+  end # run
 
 end #class HangmanGame
 
 
 game = HangmanGame.new
-
+puts Rainbow("Starting a new game").turquoise
 game.run
 
 
