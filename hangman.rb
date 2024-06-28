@@ -5,28 +5,44 @@ words = contents.filter { |word| word.length.between?(6,13)}
 target = words.sample.chop    # chop the trailing "\n"
 display = ""
 
-def check_and_replace(target, display, guess)
-  if target.include?(guess)
-    if target.count(guess) == 1
-      display[target.index(guess)] = guess   # will replace only the first occurance
-    else
-      target.chars.each_with_index  do |ch, idx|
-        if ch.eql?(guess)
-          display[idx] = guess
+class HangmanGame 
+  attr_reader :display, :target
+
+  def initialize
+    contents = File.readlines('google-10000-english-no-swears.txt')
+    words = contents.filter { |word| word.length.between?(6,13)}
+    @target = words.sample.chop
+    @display = "" 
+    @target.size.times do
+      @display += "*"
+    end
+  end # initialize
+
+  def check_and_replace(guess)
+    if @target.include?(guess)
+      if @target.count(guess) == 1
+        @display[@target.index(guess)] = guess  
+      else
+        @target.chars.each_with_index  do |ch, idx|
+          if ch.eql?(guess)
+            @display[idx] = guess
+          end
         end
       end
     end
-  end
-end
+  end # check_and_replace
 
-puts target
-target.size.times do
-  display += "*"
-end
-puts display
+end #class HangmanGame
+
+
+game = HangmanGame.new
+
+puts game.target
+
+puts game.display
 print "\nGuess a letter : "
 guess = gets.chomp
 print "You inputs #{guess}\n"
-check_and_replace(target, display, guess)
-puts display
+game.check_and_replace(guess)
+puts game.display
 
