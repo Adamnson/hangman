@@ -10,6 +10,7 @@ class HangmanGame
     contents = File.readlines('google-10000-english-no-swears.txt')
     words = contents.filter { |word| word.length.between?(6, 13) }
     @target = words.sample.chop
+    @game_over = false
     @display = ''
     @rounds = 7
     @guesses = []
@@ -35,7 +36,7 @@ class HangmanGame
       @guesses << guess
       player_lost?
     end
-    print "#{Rainbow(@display.to_s).lawngreen}\t"
+    print "#{Rainbow(@display.to_s).lawngreen}\t" unless @game_over
   end
 
   def player_won?
@@ -47,6 +48,7 @@ class HangmanGame
 
     puts Rainbow('Better luck next time!').palevioletred
     puts "The word was : #{Rainbow(@target.to_s).sienna}"
+    @game_over = true
   end
 
   def run
