@@ -53,7 +53,7 @@ class HangmanGame
       # puts @target
       puts "#{@rounds} ".yellow + Rainbow(@guesses.to_s).fuchsia
       print 'Guess a letter : '
-      guess = gets.chomp
+      guess = gets.chomp.downcase
       if guess.eql?('1')
         save_game
         break
