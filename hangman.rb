@@ -28,6 +28,8 @@ class HangmanGame
         end
       end
       player_won?
+    elsif @guesses.include?(guess)
+      puts Rainbow("You already guessed #{guess}.").fuchsia
     else
       @rounds -= 1
       @guesses << guess
