@@ -15,7 +15,7 @@ class HangmanGame # rubocop:disable Metrics/ClassLength
   attr_reader :display, :target, :rounds
 
   def initialize
-    contents = File.readlines('google-10000-english-no-swears.txt')
+    contents = File.readlines('lib/google-10000-english-no-swears.txt')
     words = contents.filter { |word| word.length.between?(6, 13) }
     @target = words.sample.chop
     @game_over = false
@@ -68,6 +68,7 @@ class HangmanGame # rubocop:disable Metrics/ClassLength
   end
 
   def run # rubocop:disable Metrics/MethodLength
+    print "#{@display}\t"
     while @rounds.positive? && display.include?('*')
       guess = display_and_collect_input
       case guess
@@ -84,17 +85,16 @@ class HangmanGame # rubocop:disable Metrics/ClassLength
   end
 
   def display_and_collect_input
-    print "#{@display}\t"
     puts "#{@rounds} ".yellow + Rainbow(@guesses.to_s).fuchsia
     print 'Guess a letter : '
     gets.chomp.downcase
   end
 
   def save_game
-    FileUtils.mkdir_p('save_data')
+    FileUtils.mkdir_p('./save_data')
     data_to_write = to_json
     d = DateTime.now
-    file_path = "save_data/sf_#{d.strftime('%Y%jT%H%MZ%S')}.json"
+    file_path = "./save_data/sf_#{d.strftime('%Y%jT%H%MZ%S')}.json"
     File.open(file_path, 'a') do |f|
       f.puts(data_to_write)
       f.close
@@ -119,12 +119,12 @@ class HangmanGame # rubocop:disable Metrics/ClassLength
     @guesses = data['guesses']
   end
 
-  def valid_save_file_exists
-    Dir.exist?('save_data') && !Dir.empty?('save_data')
+  def valid_save_file_exists?
+    Dir.exist?('./save_data') && !Dir.empty?('./save_data')
   end
 
   def display_save_files_and_collect_json
-    Dir.entries('save_data').each_with_index do |file, idx|
+    Dir.entries('./save_data').each_with_index do |file, idx|
       puts "#{idx}) #{Rainbow(file.to_s).peachpuff}" if file.end_with?('.json')
     end
     puts 'Enter your choice '
@@ -135,7 +135,9 @@ class HangmanGame # rubocop:disable Metrics/ClassLength
     return false unless valid_save_file_exists?
 
     user_input = display_save_files_and_collect_json
-    load_json("save_data/#{Dir.children('save_data')[user_input]}") if user_input < Dir.children('save_data').size
+    if user_input < Dir.children('./save_data').size # rubocop:disable Style/IfUnlessModifier
+      load_json("./save_data/#{Dir.children('./save_data')[user_input]}")
+    end
     run
   end
 end
