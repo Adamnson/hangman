@@ -44,7 +44,7 @@ class HangmanGame
   end
 
   def player_lost?
-    return if @rounds.positive?
+    return false if @rounds.positive?
 
     puts Rainbow('Better luck next time!').palevioletred
     puts "The word was : #{Rainbow(@target.to_s).sienna}"
@@ -69,7 +69,7 @@ class HangmanGame
   end
 
   def save_game
-    Dir.mkdir('save_data') unless Dir.exist?('save_data')
+    FileUtils.mkdir_p('save_data')
     data_to_write = to_json
     file_path = "save_data/sf_#{Date.today.year}#{Date.today.month}#{Date.today.day}.json"
     File.open(file_path, 'a') do |f|

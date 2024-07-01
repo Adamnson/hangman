@@ -9,5 +9,8 @@
 #
 # See https://docs.rubocop.org/rubocop/configuration
 
+AllCops:
+  NewCops: enable
+
 Style/FrozenStringLiteralComment:
   EnforcedStyle: never
