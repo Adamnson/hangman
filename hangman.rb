@@ -1,3 +1,5 @@
+require 'json'
+require 'date'
 require 'rainbow/refinement'
 using Rainbow
 
@@ -40,17 +42,44 @@ class HangmanGame
       puts "#{@rounds} ".yellow + Rainbow("#{@guesses}").fuchsia
       print "Guess a letter : "
       guess = gets.chomp
-      check_and_replace(guess)
+      if guess.eql?("1")
+        save_game
+        break
+      else
+        check_and_replace(guess)
+      end
       print Rainbow("#{@display}").lawngreen + "\t"
     end
     puts ""
   end # run
+
+  def save_game
+    Dir.mkdir('save_data') unless Dir.exist?('save_data')
+    data_to_write = self.to_json
+    file_path = "save_data/sf_#{Date.today.year.to_s}#{Date.today.month.to_s}#{Date.today.day.to_s}.json"
+    File.open(file_path, "a") do |f|
+      f.write(data_to_write)
+      f.close
+    end
+    puts Rainbow("Game Saved!").goldenrod
+end
+    
+  def to_json
+    JSON.dump ({
+      :target => @target,
+      :display => @display,
+      :rounds => @rounds,
+      :guesses => @guesses
+    })
+  end
 
 end #class HangmanGame
 
 
 game = HangmanGame.new
 puts Rainbow("Starting a new game").turquoise
+puts Rainbow("Press 1 to save game").goldenrod
+puts Rainbow("Press 0 to load game").goldenrod
 game.run
 
 
