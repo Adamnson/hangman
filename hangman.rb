@@ -3,30 +3,28 @@ require 'date'
 require 'rainbow/refinement'
 using Rainbow
 
-class HangmanGame 
+class HangmanGame
   attr_reader :display, :target, :rounds
 
   def initialize
     contents = File.readlines('google-10000-english-no-swears.txt')
-    words = contents.filter { |word| word.length.between?(6,13)}
+    words = contents.filter { |word| word.length.between?(6, 13) }
     @target = words.sample.chop
-    @display = "" 
+    @display = ''
     @rounds = 7
     @guesses = []
     @target.size.times do
-      @display += "*"
+      @display += '*'
     end
-  end # initialize
+  end
 
   def check_and_replace(guess)
     if @target.include?(guess)
       if @target.count(guess) == 1
-        @display[@target.index(guess)] = guess  
+        @display[@target.index(guess)] = guess
       else
         @target.chars.each_with_index  do |ch, idx|
-          if ch.eql?(guess)
-            @display[idx] = guess
-          end
+          @display[idx] = guess if ch.eql?(guess)
         end
       end
       player_won?
@@ -35,65 +33,60 @@ class HangmanGame
       @guesses << guess
       player_lost?
     end
-    print Rainbow("#{@display}").lawngreen + "\t" 
-  end # check_and_replace
+    print "#{Rainbow(@display.to_s).lawngreen}\t"
+  end
 
   def player_won?
-    puts Rainbow("Well Done! You won!").crimson unless @display.include?("*")
+    puts Rainbow('Well Done! You won!').crimson unless @display.include?('*')
   end
 
   def player_lost?
-    unless @rounds > 0
-      puts Rainbow("Better luck next time!").palevioletred 
-      puts "The word was : " + Rainbow("#{@target}").sienna 
-    end
+    return if @rounds.positive?
+
+    puts Rainbow('Better luck next time!').palevioletred
+    puts "The word was : #{Rainbow(@target.to_s).sienna}"
   end
 
   def run
-    print @display + "\t"
-    while @rounds > 0 && display.include?("*")
+    print "#{@display}\t"
+    while @rounds.positive? && display.include?('*')
       # puts @target
-      puts "#{@rounds} ".yellow + Rainbow("#{@guesses}").fuchsia
-      print "Guess a letter : "
+      puts "#{@rounds} ".yellow + Rainbow(@guesses.to_s).fuchsia
+      print 'Guess a letter : '
       guess = gets.chomp
-      if guess.eql?("1")
+      if guess.eql?('1')
         save_game
         break
       else
         check_and_replace(guess)
       end
     end
-    puts ""
-  end # run
+    puts ''
+  end
 
   def save_game
     Dir.mkdir('save_data') unless Dir.exist?('save_data')
-    data_to_write = self.to_json
-    file_path = "save_data/sf_#{Date.today.year.to_s}#{Date.today.month.to_s}#{Date.today.day.to_s}.json"
-    File.open(file_path, "a") do |f|
+    data_to_write = to_json
+    file_path = "save_data/sf_#{Date.today.year}#{Date.today.month}#{Date.today.day}.json"
+    File.open(file_path, 'a') do |f|
       f.write(data_to_write)
       f.close
     end
-    puts Rainbow("Game Saved!").goldenrod
-end
-    
-  def to_json
-    JSON.dump ({
-      :target => @target,
-      :display => @display,
-      :rounds => @rounds,
-      :guesses => @guesses
-    })
+    puts Rainbow('Game Saved!').goldenrod
   end
 
-end #class HangmanGame
-
+  def to_json(*_args)
+    JSON.dump({
+                target: @target,
+                display: @display,
+                rounds: @rounds,
+                guesses: @guesses
+              })
+  end
+end
 
 game = HangmanGame.new
-puts Rainbow("Starting a new game").turquoise
-puts Rainbow("Press 1 to save game").goldenrod
-puts Rainbow("Press 0 to load game").goldenrod
+puts Rainbow('Starting a new game').turquoise
+puts Rainbow('Press 1 to save game').goldenrod
+puts Rainbow('Press 0 to load game').goldenrod
 game.run
-
-
-
