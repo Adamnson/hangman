@@ -29,11 +29,25 @@ class HangmanGame
           end
         end
       end
+      player_won?
     else
       @rounds -= 1
       @guesses << guess
+      player_lost?
     end
+    print Rainbow("#{@display}").lawngreen + "\t" 
   end # check_and_replace
+
+  def player_won?
+    puts Rainbow("Well Done! You won!").crimson unless @display.include?("*")
+  end
+
+  def player_lost?
+    unless @rounds > 0
+      puts Rainbow("Better luck next time!").palevioletred 
+      puts "The word was : " + Rainbow("#{@target}").sienna 
+    end
+  end
 
   def run
     print @display + "\t"
@@ -48,7 +62,6 @@ class HangmanGame
       else
         check_and_replace(guess)
       end
-      print Rainbow("#{@display}").lawngreen + "\t"
     end
     puts ""
   end # run
