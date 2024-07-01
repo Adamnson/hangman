@@ -4,7 +4,14 @@ require 'fileutils'
 require 'rainbow/refinement'
 using Rainbow
 
-class HangmanGame
+#  name: HangmanGame
+#  class variables:
+#   @target   : the actual word that needs to be guesses
+#   @display  : the string that gets displayed to the user
+#   @rounds   : variable to track the number of guesses
+#   @guesses  : array to collect the wrong guesses made by the player
+#   @game_over: flag to inidcate that all guesses have been exhausted
+class HangmanGame # rubocop:disable Metrics/ClassLength
   attr_reader :display, :target, :rounds
 
   def initialize
@@ -30,6 +37,11 @@ class HangmanGame
     end
   end
 
+  def update_scores(guess)
+    @rounds -= 1
+    @guesses << guess
+  end
+
   def check_and_replace(guess)
     if @target.include?(guess)
       update_display(guess)
@@ -37,8 +49,7 @@ class HangmanGame
     elsif @guesses.include?(guess)
       puts Rainbow("You already guessed #{guess}.").fuchsia
     else
-      @rounds -= 1
-      @guesses << guess
+      update_scores(guess)
       player_lost?
     end
     print "#{Rainbow(@display.to_s).lawngreen}\t" unless @game_over
@@ -56,17 +67,14 @@ class HangmanGame
     @game_over = true
   end
 
-  def run
-    print "#{@display}\t"
+  def run # rubocop:disable Metrics/MethodLength
     while @rounds.positive? && display.include?('*')
-      # puts @target
-      puts "#{@rounds} ".yellow + Rainbow(@guesses.to_s).fuchsia
-      print 'Guess a letter : '
-      guess = gets.chomp.downcase
-      if guess.eql?('1')
+      guess = display_and_collect_input
+      case guess
+      when '1'
         save_game
         break
-      elsif guess.eql?('0')
+      when '0'
         load_game
       else
         check_and_replace(guess)
@@ -75,10 +83,18 @@ class HangmanGame
     puts ''
   end
 
+  def display_and_collect_input
+    print "#{@display}\t"
+    puts "#{@rounds} ".yellow + Rainbow(@guesses.to_s).fuchsia
+    print 'Guess a letter : '
+    gets.chomp.downcase
+  end
+
   def save_game
     FileUtils.mkdir_p('save_data')
     data_to_write = to_json
-    file_path = "save_data/sf_#{Date.today.year}#{Date.today.month}#{Date.today.day}#{Time.now.hour}#{Time.now.min}#{Time.now.sec}.json"
+    d = DateTime.now
+    file_path = "save_data/sf_#{d.strftime('%Y%jT%H%MZ%S')}.json"
     File.open(file_path, 'a') do |f|
       f.puts(data_to_write)
       f.close
@@ -103,22 +119,24 @@ class HangmanGame
     @guesses = data['guesses']
   end
 
-  def load_game
-    # check if save_game and save files exist
-    return false unless Dir.exist?('save_data') && !Dir.empty?('save_data')
+  def valid_save_file_exists
+    Dir.exist?('save_data') && !Dir.empty?('save_data')
+  end
 
-    Dir.entries('save_data').each do |file|
-      puts Rainbow(file.to_s).peachpuff if file.end_with?('.json')
+  def display_save_files_and_collect_json
+    Dir.entries('save_data').each_with_index do |file, idx|
+      puts "#{idx}) #{Rainbow(file.to_s).peachpuff}" if file.end_with?('.json')
     end
-    puts 'Enter the number in the file name : '
-    user_input = gets.chomp
-    if Dir.children('save_data').include?("sf_#{user_input}.json")
-      load_json("save_data/sf_#{user_input}.json")
-      run
-    else
-      print 'Invalid input'
-    end
-    # load file data and resume game
+    puts 'Enter your choice '
+    gets.chomp.to_i
+  end
+
+  def load_game
+    return false unless valid_save_file_exists?
+
+    user_input = display_save_files_and_collect_json
+    load_json("save_data/#{Dir.children('save_data')[user_input]}") if user_input < Dir.children('save_data').size
+    run
   end
 end
 
