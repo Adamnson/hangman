@@ -20,14 +20,6 @@ class HangmanGame
     end
   end
 
-  def load(target, display, rounds, guesses)
-    @target = target
-    @display = display
-    @rounds = rounds
-    @guesses = guesses
-  end
-
-
   def update_display(guess)
     if @target.count(guess) == 1
       @display[@target.index(guess)] = guess
@@ -104,10 +96,11 @@ class HangmanGame
   end
 
   def load_json(file_name)
-    data = JSON.load(File.read(file_name))
-    load(data["target"], data["display"], data["rounds"], data["guesses"])
-
-
+    data = JSON.parse(File.read(file_name))
+    @target = data['target']
+    @display = data['display']
+    @rounds = data['rounds']
+    @guesses = data['guesses']
   end
 
   def load_game
@@ -128,8 +121,6 @@ class HangmanGame
     # load file data and resume game
   end
 end
-
-
 
 game = HangmanGame.new
 puts Rainbow('Starting a new game').turquoise
